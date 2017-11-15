@@ -1,7 +1,7 @@
 {
   "name": "rextract",
-  "version": "1.0.0",
-  "description": "simple library for (recursively) extracting 'public' (or any given set of) properties from any object with maximum configurability",
+  "version": "1.0.1",
+  "description": "easy to use but somewhat useful library for (recursively) extracting 'public' (or any given set of) properties from any object with maximum configurability",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
