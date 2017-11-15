@@ -1,4 +1,6 @@
-/**
+const getOptions = require('../options/');
+
+ /**
  * extracts all 'public' properties from an object, recursively per default.
  * private properties can either be defined by having the same prefix (i.e. '__privateProperty')
  * or by providing all key names that should be ignored.
@@ -6,36 +8,54 @@
  *
  * note: if you want a more convenient way of rextracting by extending Object.prototype, use require(rextract) instead
  *
- * All parameters are optional
- * @param {Object} object the object to extract data from
- * @param {boolean} recursive if true, will go through all child objects
- * @param {string} ignorePrefix string to detect private properties by their key names (i.e. '__' for '__privateProp'). a falsey value will disable this check.
- * @param {Array} ignoreKeys Array of strings standing for keys that will be ignored (i.e. [ 'internalId', 'hugeChildObjectWeDontNeedAndThusIgnore' ])
- * @param {function} iteratorCallback callback function that, if provided, will be called for every property that is not being ignored. function will be called with 3 parameters, key, value and object, and is expected to return a value to be stored for that property or null to skip it. check the readme for example implementation.
+ * option default values:
+ *  {
+ *      recursive: false,           // whether to extract child objects too
+ *      arrayIsRecursion: false     // whether an array is treated as recursion
+ *      depth: -1,                  // maximum object depth, -1 = none
+ *      ignore: {                   // you may also provide simple strings instead of arrays here
+ *          prefix: [],             // prefix(-es) to identify and ignore 'private' properties
+ *          keys: [],               // explicit keys to be ignored
+ *          types: [ 'undefined' ], // explicit types to be ignored
+ *          null: true              // whether null-values should be ignored
+ *      },
+ *      step: false                 // extraction-step callback (function(key, value, object) { }) check the readme for more information
+ *  }
+ * @param {Object} object           // the object to extract data from
+ * @param {Object} options
+ * @param {number} __depth only used internally, don't provide this unless you want to break it
  * @returns {Object} extracted data object */
-function rextract(object, recursive, ignorePrefix, ignoreKeys, iteratorCallback) {
-    var d = {};
-    for (var k in object) {
+const rextract = function(object, options, __depth) {
+    if (typeof object != 'object') return object;
+    var o = getOptions(options);
+    if (typeof __depth == 'undefined') __depth = o.depth;
+    var r = (__depth == 0 ? false : o.recursive),
+        i = o.ignore,
+        d = {};
+    step: for (var k in object) {
         var v = object[k];
-        if (typeof v == 'undefined' ||
-            typeof v == 'function' ||
-            v === null) continue;
-        if ((ignorePrefix && k.indexOf(ignorePrefix) == 0) ||
-            (ignoreKeys && ignoreKeys.indexOf(k) > -1)) continue;
+        if ((i.types.indexOf(typeof v) > -1) ||
+            (v === null && i.null) ||
+            (i.keys && i.keys.indexOf(k) > -1)) continue;
+        for (var p = 0; p < i.prefix.length; p++) if (k.indexOf(i.prefix[p]) == 0) continue step;
         if (typeof v == 'object') {
             if (Array.isArray(v)) {
+                if (o.arrayIsRecursion && !r) continue;
                 d[k] = [];
-                var _v = rextract(v, recursive, ignorePrefix, ignoreKeys, iteratorCallback);
-                for (var _k in _v) if (typeof _v[_k] != 'function') d[k].push(_v[_k]);
-            } else if (recursive) d[k] = rextract(v, recursive, ignorePrefix, ignoreKeys, iteratorCallback);
+                var _v = rextract(v, o, __depth - 1);
+                for (var _k in _v) if (typeof _v[_k] !== 'function') d[k].push(_v[_k]);
+            } else if (r) d[k] = rextract(v, o, __depth - 1);
         } else {
-            if (typeof iteratorCallback == 'function')
-                d[k] = iteratorCallback(k, v, object);
+            if (typeof o.step == 'function')
+                d[k] = o.step(k, v, this);
             else d[k] = v;
         }
-        if (d[k] === null) delete d[k];
+        if (d[k] === null && i.null) delete d[k];
     }
     return d;
-}
+};
+
 
 module.exports = rextract;
+
+

@@ -16,7 +16,10 @@ Object.defineProperty(this, 'dummy', {
                 __private: 40,
                 deepObject: {
                     public: 20,
-                    __private: 80
+                    __private: 80,
+                    superDeep: {
+                        __veryDark: true
+                    }
                 }
             },
             publicFunction: function() { },
@@ -25,24 +28,30 @@ Object.defineProperty(this, 'dummy', {
     }
 });
 
-describe('rextract() [SAFE], = require(\'rextract/safe\')', () => {
-    it('should return an extracted object containing all properties that are primitive, not null and not undefined by default\n' +
-        '-> rextract(object);', () => {
+describe('rextract() [SAFE]', () => {
+    it('export all, no recursion', () => {
         var result = rextract(this.dummy);
-        assert.equal(5, Object.keys(result).length);
-        assert.equal(undefined, result.publicObject);
+        assert.equal(7, Object.keys(result).length);
+        assert.equal('undefined', typeof result.publicObject);
     });
-    it('should return an extracted object containing primitives and all child objects including their primitives when recursive = true\n' +
-        '-> rextract(object, true);', () => {
-        var result = rextract(this.dummy, true);
-        assert.equal(6, Object.keys(result).length);
-        assert.equal('object', typeof result.publicObject);
+    it('export all keys not starting with __, no recursion', () => {
+        var result = rextract(this.dummy, {
+            ignore: {
+                prefix: '__'
+            }
+        });
+        assert.equal(4, Object.keys(result).length);
+        assert.equal('undefined', typeof result.__privateString);
     });
-    it('should return an extracted object containing all public primitives, skipping those with given prefix ignorePrefix = \'__\'\n' +
-        '-> rextract(object, false, \'__\');', () => {
-        var result = rextract(this.dummy, false, '__');
-        assert.equal(3, Object.keys(result).length);
-        assert.equal('undefined', typeof result.__privateInt);
+    it('should return an extracted object containing all properties and objects that are null or undefined and match the prefix "__"', () => {
+        var result = rextract(this.dummy, {
+            recursive: true,
+            ignore: {
+                prefix: '__'
+            }
+        });
+        assert.equal(4, Object.keys(result).length);
+        assert.equal('undefined', typeof result.__privateString);
     });
     it('should return an extracted object containing all primitives except for all keys defined with ignoreKeys = [ \'veryCustomProperty\' ]\n' +
         '-> rextract(object, false, false, [\'veryCustomProperty\');', () => {
@@ -66,9 +75,9 @@ describe('rextract() [SAFE], = require(\'rextract/safe\')', () => {
     });
 });
 
-require('../');
+//require('../');
 
-describe('Object.prototype.rextract() [POTENTIALLY UNSAFE] but so cool, = require(\'rextract\')', () => {
+describe('Object.prototype.rextract() [UNSAFE]', () => {
     it('should return an extracted object containing all properties that are primitive, not null and not undefined by default\n' +
         '-> object.rextract();', () => {
         var result = this.dummy.rextract();

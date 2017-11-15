@@ -4,7 +4,8 @@ Rextract is a very simple library written in JavaScript that provides a single f
 from any object, with
  - optional and smart recursion
  - simulated and customizable public/private behaviour using your own naming conventions (i.e. user.__privateName vs. user.displayName)
- - and even an iteration callback to fully customize the extraction behaviour step by step.
+ - maximum configuration possibilities
+ - an iteration callback to fully customize the extraction behaviour step by step.
 
 ### Important Notice
 When requiring rextract normally, ` Object.prototype ` will be overwritten. 
@@ -22,10 +23,7 @@ var data = rextract(object);
 
 ### Basic Usage
 ```
-// assume we have the following user object defined:
-var user = {
-    name: 'Legit UserName',
-    age: 24,
+//
     
 ```
 
