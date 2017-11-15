@@ -15,7 +15,7 @@
  * @returns {Object} extracted data object */
 function rextract(object, recursive, ignorePrefix, ignoreKeys, iteratorCallback) {
     var d = {};
-    for(var k in object) {
+    for (var k in object) {
         var v = object[k];
         if (typeof v == 'undefined' ||
             typeof v == 'function' ||
@@ -23,7 +23,11 @@ function rextract(object, recursive, ignorePrefix, ignoreKeys, iteratorCallback)
         if ((ignorePrefix && k.indexOf(ignorePrefix) == 0) ||
             (ignoreKeys && ignoreKeys.indexOf(k) > -1)) continue;
         if (typeof v == 'object') {
-            if (recursive) d[k] = rextract(v, recursive, ignorePrefix, ignoreKeys, iteratorCallback);
+            if (Array.isArray(v)) {
+                d[k] = [];
+                var _v = rextract(v, recursive, ignorePrefix, ignoreKeys, iteratorCallback);
+                for (var _k in _v) if (typeof _v[_k] != 'function') d[k].push(_v[_k]);
+            } else if (recursive) d[k] = rextract(v, recursive, ignorePrefix, ignoreKeys, iteratorCallback);
         } else {
             if (typeof iteratorCallback == 'function')
                 d[k] = iteratorCallback(k, v, object);
