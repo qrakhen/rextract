@@ -1,0 +1,19 @@
+{
+  "name": "rextract",
+  "version": "1.0.0",
+  "description": "simple library for (recursively) extracting 'public' (or any given set of) properties from an object",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/qrakhen/rextract.git"
+  },
+  "author": "filosofem.dave@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qrakhen/rextract/issues"
+  },
+  "homepage": "https://github.com/qrakhen/rextract#readme"
+}
