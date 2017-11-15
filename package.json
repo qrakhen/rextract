@@ -1,7 +1,7 @@
 {
   "name": "rextract",
   "version": "1.0.0",
-  "description": "simple library for (recursively) extracting 'public' (or any given set of) properties from an object",
+  "description": "simple library for (recursively) extracting 'public' (or any given set of) properties from any object with maximum configurability",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/qrakhen/rextract/issues"
   },
-  "homepage": "https://github.com/qrakhen/rextract#readme"
+  "homepage": "https://github.com/qrakhen/rextract#readme",
+  "devDependencies": {
+    "mocha": "^4.0.1"
+  }
 }

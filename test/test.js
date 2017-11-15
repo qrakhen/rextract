@@ -28,92 +28,45 @@ Object.defineProperty(this, 'dummy', {
     }
 });
 
-describe('rextract() [SAFE]', () => {
-    it('export all, no recursion', () => {
-        var result = rextract(this.dummy);
+describe('rextract()', () => {
+    it('export everything but undefined and null, no recursion', () => {
+        var result = rextract(this.dummy, false);
         assert.equal(7, Object.keys(result).length);
         assert.equal('undefined', typeof result.publicObject);
     });
-    it('export all keys not starting with __, no recursion', () => {
-        var result = rextract(this.dummy, {
-            ignore: {
-                prefix: '__'
-            }
-        });
-        assert.equal(4, Object.keys(result).length);
-        assert.equal('undefined', typeof result.__privateString);
-    });
-    it('should return an extracted object containing all properties and objects that are null or undefined and match the prefix "__"', () => {
-        var result = rextract(this.dummy, {
-            recursive: true,
-            ignore: {
-                prefix: '__'
-            }
-        });
-        assert.equal(4, Object.keys(result).length);
-        assert.equal('undefined', typeof result.__privateString);
-    });
-    it('should return an extracted object containing all primitives except for all keys defined with ignoreKeys = [ \'veryCustomProperty\' ]\n' +
-        '-> rextract(object, false, false, [\'veryCustomProperty\');', () => {
-        var result = rextract(this.dummy, false, false, [ 'veryCustomProperty' ]);
-        assert.equal(4, Object.keys(result).length);
-        assert.equal('undefined', typeof result.veryCustomProperty);
-    });
-    it('should return nothing at all when providing an iterator callback that always returns null:\n' +
-        '-> rextract(object, false, false, false, (k, v, o) => { return null; });', () => {
-        var result = rextract(this.dummy, false, false, false, (k, v, o) => { return null; });
-        assert.equal(0, Object.keys(result).length);
-    });
-    it('should return an object that only contains properties that are real and less than 40 including those of all child objects when using a custom callback and recursive = true:\n' +
-        '-> rextract(object, true, false, false, (k, v, o) => {\nif (typeof v == \'number\') return (v < 40 ? v : null);\nelse return null;\n});', () => {
-        var result = rextract(this.dummy, true, false, false, (k, v, o) => {
-            if (typeof v == 'number') return (v < 40 ? v : null);
-            return null;
-        });
-        assert.equal(3, Object.keys(result).length);
-        assert.equal(10, result.publicObject.public);
-    });
-});
-
-//require('../');
-
-describe('Object.prototype.rextract() [UNSAFE]', () => {
-    it('should return an extracted object containing all properties that are primitive, not null and not undefined by default\n' +
-        '-> object.rextract();', () => {
-        var result = this.dummy.rextract();
+    it('export everything but null, undefined and properties that start with __', () => {
+        var result = rextract(this.dummy, '__');
         assert.equal(5, Object.keys(result).length);
-        assert.equal(undefined, result.publicObject);
+        assert.equal('undefined', typeof result.__privateString);
     });
-    it('should return an extracted object containing primitives and all child objects including their primitives when recursive = true\n' +
-        '-> object.rextract(true);', () => {
-        var result = this.dummy.rextract(true);
-        assert.equal(6, Object.keys(result).length);
+    it('export everything but null and undefined, with recursion', () => {
+        var result = rextract(this.dummy);
+        assert.equal(8, Object.keys(result).length);
         assert.equal('object', typeof result.publicObject);
     });
-    it('should return an extracted object containing all public primitives, skipping those with given prefix ignorePrefix = \'__\'\n' +
-        '-> object.rextract(false, \'__\');', () => {
-        var result = this.dummy.rextract(false, '__');
-        assert.equal(3, Object.keys(result).length);
-        assert.equal('undefined', typeof result.__privateInt);
-    });
-    it('should return an extracted object containing all primitives except for all keys defined with ignoreKeys = [ \'veryCustomProperty\' ]\n' +
-        '-> object.rextract(false, false, [\'veryCustomProperty\');', () => {
-        var result = this.dummy.rextract(false, false, [ 'veryCustomProperty' ]);
-        assert.equal(4, Object.keys(result).length);
-        assert.equal('undefined', typeof result.veryCustomProperty);
-    });
-    it('should return nothing at all when providing an iterator callback that always returns null:\n' +
-        '-> object.rextract(false, false, false, (k, v, o) => { return null; });', () => {
-        var result = this.dummy.rextract(false, false, false, (k, v, o) => { return null; });
-        assert.equal(0, Object.keys(result).length);
-    });
-    it('should return an object that only contains properties that are real and less than 40 including those of all child objects when using a custom callback and recursive = true:\n' +
-        '-> object.rextract(true, false, false, (k, v, o) => {\nif (typeof v == \'number\') return (v < 40 ? v : null);\nelse return null;\n});', () => {
-        var result = this.dummy.rextract(true, false, false, (k, v, o) => {
-            if (typeof v == 'number') return (v < 40 ? v : null);
-            return null;
+    it('export everything but null and undefined, with recursion but maximum depth 2', () => {
+        var result = rextract(this.dummy, {
+            depth: 2
         });
-        assert.equal(3, Object.keys(result).length);
-        assert.equal(10, result.publicObject.public);
+        assert.equal('object', typeof result.publicObject.deepObject);
+        assert.equal('undefined', typeof result.publicObject.deepObject.superDeep)
+    });
+    it('export default options, but double every number using step callback', () => {
+        var result = rextract(this.dummy, {
+            each: (k, v, o) => {
+                if (typeof v == 'number') return v * 2;
+                else return v;
+            }
+        });
+        assert.equal(10, result.publicInt);
+    });
+    it('should return every single property by always returning true inside the pre() callback', () => {
+        var result = rextract(this.dummy, {
+            recursive: false,
+            pre: (k, v, o) => {
+                return true;
+            }
+        });
+        assert.equal(10, Object.keys(result).length);
     });
 });
