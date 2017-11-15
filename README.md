@@ -10,9 +10,14 @@ from any object, with
 ### Usage
 Please scroll down for an in depth usage guide!
 
-```npm install --save rextract```
-```require('rextract');
-var data = object.rextract(options);```
+```
+npm install --save rextract
+```
+
+```
+require('rextract');
+var data = object.rextract(options);
+```
 
 #### Please Note
 When requiring rextract normally, ` Object.prototype ` will be overwritten.
